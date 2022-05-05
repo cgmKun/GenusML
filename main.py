@@ -1,3 +1,4 @@
+import pandas
 import tensorflow as tf
 import numpy as np
 import pandas as pd
@@ -6,22 +7,27 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 import json
 
+query = """query	{
+  defectsByReportId(reportId: "6273626676b6958fa71d9315") {
+    _id
+    issueKey
+    status
+    priority
+    severity
+    projectKey
+    issueType
+    created
+    assignee
+    digitalService
+    summary
+    description
+  }
+}"""
 
-with open("small-defects-query.json", "r") as read_file:
-    response = json.load(read_file)
-    response = json.loads(json.dumps(response))
-
-data = response["data"]["defectsByReportId"]
-defects = []
-for val in data:
-    defects.append({
-        "id": val.get('_id'),
-        "issueKey": val.get('issueKey'),
-        "status": val.get('status'),
-        "description": val.get('description')
-    })
-
-print(defects)
-defects_df = pd.DataFrame(defects)
-print(defects_df)
+url = "http://localhost:8000/api"
+r = requests.post(url, json={'query': query})
+jsonData = json.loads(r.text)
+df_data = jsonData['data']['defectsByReportId']
+df = pandas.DataFrame(df_data)
+print(df)
 
