@@ -49,3 +49,4 @@ for word in words:
 # print tokenized df
 for i in tokenizedDF:
   print(i)
+  
