@@ -38,7 +38,8 @@ print(df)
 
 # Tokenization
 tokenizedDF = []
-words = re.findall(r'\w+', df)
+lowerDF = df.lower()
+words = re.findall(r'\w+', lowerDF)
 
 for word in words:
   if not word in tokens:
@@ -49,4 +50,3 @@ for word in words:
 # print tokenized df
 for i in tokenizedDF:
   print(i)
-  
