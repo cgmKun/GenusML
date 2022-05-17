@@ -5,6 +5,10 @@ import requests
 from matplotlib import pyplot as plt
 from matplotlib import cm
 import json
+import re
+
+# Map of tokens
+tokens = {}
 
 query = """query	{
   defectsByReportId(reportId: "6273626676b6958fa71d9315") {
@@ -33,3 +37,19 @@ print(df)
     #assignee
     #digitalService
     #summary
+
+# Tokenization
+tokenizedDF = []
+lowerDF = df.lower()
+words = re.findall(r'\w+', lowerDF)
+
+for word in words:
+  if not word in tokens:
+    tokens[word] = len(tokens) + 1
+  
+  tokenizedDF.append(tokens[word])
+
+# print tokenized df
+for i in tokenizedDF:
+  print(i)
+
