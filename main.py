@@ -1,5 +1,4 @@
 import pandas
-import tensorflow as tf
 import numpy as np
 import pandas as pd
 import requests
@@ -9,25 +8,28 @@ import json
 
 query = """query	{
   defectsByReportId(reportId: "6273626676b6958fa71d9315") {
-    _id
-    issueKey
-    status
-    priority
-    severity
-    projectKey
-    issueType
-    created
-    assignee
-    digitalService
-    summary
     description
   }
-}"""
+}""" 
+
 
 url = "http://localhost:8000/api"
 r = requests.post(url, json={'query': query})
 jsonData = json.loads(r.text)
 df_data = jsonData['data']['defectsByReportId']
+print(df_data)
 df = pandas.DataFrame(df_data)
 print(df)
 
+
+#_id
+    #issueKey
+    #status
+    #priority
+    #severity
+    #projectKey
+    #issueType
+    #created
+    #assignee
+    #digitalService
+    #summary
