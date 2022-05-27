@@ -1,62 +1,55 @@
-#Standard Libraries
 import pandas
-import sys
 import numpy as np
 import pandas as pd
 import requests
+from matplotlib import pyplot as plt
+from matplotlib import cm
 import json
+import re
 
-# Sklearn
-from sklearn.datasets import fetch_20newsgroups
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
+# Map of tokens
+tokens = {}
 
-# Plotting Libraries
-import matplotlib.pyplot as plt
-import seaborn as sns
+query = """query	{
+  defectsByReportId(reportId: "6273626676b6958fa71d9315") {
+    description
+  }
+}""" 
 
-#Global Variables - Command Line Arguments
-reportId = sys.argv[1]
-true_k = sys.argv[2]
 
-# Fetch defects by reportID GraphQL query
-# Returns a dataframe with the query results
-def fetchReport(reportId):
-    query = """query    {
-        defectsByReportId(reportId: "%s") {
-            _id
-            description
-        }
-    }"""
+url = "http://localhost:8000/api"
+r = requests.post(url, json={'query': query})
+jsonData = json.loads(r.text)
+df_data = jsonData['data']['defectsByReportId']
+print(df_data)
+df = pandas.DataFrame(df_data)
+print(df)
 
-    url = "http://localhost:8000/api"
-    r = requests.post(url, json={'query': query % (reportId)})
-    jsonData = json.loads(r.text)
-    df_data = jsonData['data']['defectsByReportId']
-    df = pd.DataFrame(df_data)
-    return df
 
-def main():
-    #Fetch Report data
-    defects = fetchReport(reportId)
+#_id
+    #issueKey
+    #status
+    #priority
+    #severity
+    #projectKey
+    #issueType
+    #created
+    #assignee
+    #digitalService
+    #summary
 
-    #Vectorize the description from the defects dataframe
-    vectorizer = TfidfVectorizer(stop_words={'english', 'spanish'})
-    vectorized_defects_description = vectorizer.fit_transform(defects.description)
+# Tokenization
+tokenizedDF = []
+lowerDF = df.lower()
+words = re.findall(r'\w+', lowerDF)
 
-    # Setup and run K-Means Clustering Model - Unsupervised Model
-    model = KMeans(n_clusters = int(true_k), init = 'k-means++', max_iter = 200, n_init = 10)
-    model.fit(vectorized_defects_description)
-    labels = model.labels_
+for word in words:
+  if not word in tokens:
+    tokens[word] = len(tokens) + 1
+  
+  tokenizedDF.append(tokens[word])
 
-    # Retrieve the clustered defects in a dataframe
-    clustered_defects = pd.DataFrame(list(zip(defects._id, defects.description, labels)),columns=['_id', 'description','group'])
+# print tokenized df
+for i in tokenizedDF:
+  print(i)
 
-    # Split each cluster into individual dataframes
-    for k in range(0,int(true_k)):
-        mask = clustered_defects['group'] == k
-        test = clustered_defects[mask]
-        print(test)
-
-main()
