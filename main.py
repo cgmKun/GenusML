@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import requests
 import json
+import re
 
 # Sklearn
 from sklearn.datasets import fetch_20newsgroups
