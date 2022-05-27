@@ -39,7 +39,7 @@ def fetchReport(reportId):
 
 def main():
     #Fetch Report data
-    defects = fetchReport("626c59cb164957a16a6e2d87")
+    defects = fetchReport(reportId)
 
     #Vectorize the description from the defects dataframe
     vectorizer = TfidfVectorizer(stop_words={'english', 'spanish'})
