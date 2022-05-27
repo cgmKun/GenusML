@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import requests
 import json
+import re
 
 # Sklearn
 from sklearn.datasets import fetch_20newsgroups
@@ -36,6 +37,31 @@ def fetchReport(reportId):
     df_data = jsonData['data']['defectsByReportId']
     df = pd.DataFrame(df_data)
     return df
+
+# Map of tokens is global to maintain uniqueness of tokens across multiple calls to method
+tokens = {}
+
+# Receives a string and returns an array of tokens for each word on string
+def tokenize(str):
+  # Output array
+  tokenizedDF = []
+
+  # Lowercases all chars
+  lowerDF = str.lower()
+
+  # Regex hanldes special characters
+  words = re.findall(r'\w+', lowerDF)
+
+  # Tokenizes and appends to output array
+  for word in words:
+    if not word in tokens:
+      tokens[word] = len(tokens) + 1
+  
+    tokenizedDF.append(tokens[word])
+
+  # Print tokenized string
+  for i in tokenizedDF:
+    print(i)
 
 def main():
     #Fetch Report data
