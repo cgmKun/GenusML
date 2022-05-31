@@ -17,6 +17,7 @@ import seaborn as sns
 reportId = sys.argv[1]
 sessionId = sys.argv[2]
 true_k = sys.argv[3]
+session_date = sys.argv[4]
 
 # Fetch defects by reportID GraphQL query
 # Returns a dataframe with the query results
@@ -60,7 +61,7 @@ def submitGroup(group_df, group_key):
   """.format(
     groupTitle = groupTitle,
     sessionId = sessionId,
-    submitDate = "hoy",
+    submitDate = session_date,
     defectIds = defect_ids,
     reportId = reportId
   )
