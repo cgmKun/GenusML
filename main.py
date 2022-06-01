@@ -9,6 +9,9 @@ import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 
+# Keywords
+from summa import keywords
+
 # Plotting Libraries
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -38,13 +41,19 @@ def fetchReport():
   df = pd.DataFrame(df_data)
   return df
 
-def submitGroup(group_df, group_key):
+def submitGroup(group_df, group_key, keywords):
   groupTitle = "Group " + str(group_key+1)
   ids = group_df['_id']
   defect_ids = ""
+  keywords_input = ""
 
   for i in range(len(ids)):
     defect_ids+=""""{defectId}", """.format(defectId = ids.iloc[i])
+
+  for i in range(len(keywords)):
+    keywords_input += """"{keyword}", """.format(keyword = keywords[i])
+    if (i == 9):
+      break
 
   query = """
     mutation {{
@@ -53,6 +62,7 @@ def submitGroup(group_df, group_key):
         sessionId: "{sessionId}"
         submitDate: "{submitDate}"
         defects: [{defectIds}]
+        keywords: [{keywords}]
         linkedReport: "{reportId}"
       }}) {{
         _id
@@ -63,12 +73,22 @@ def submitGroup(group_df, group_key):
     sessionId = sessionId,
     submitDate = session_date,
     defectIds = defect_ids,
+    keywords = keywords_input,
     reportId = reportId
   )
 
   url = "http://localhost:8000/api"
   r = requests.post(url, json={'query': query})
   print(r)
+
+def concatenateKeywords(keywords):
+  keyword_list = []
+
+  for i in range(0, len(keywords)):
+    keyword_list.append(keywords[i][0] + ": " + str(keywords[i][1]))
+
+  return keyword_list
+
 
 # Map of tokens is global to maintain uniqueness of tokens across multiple calls to method
 tokens = {}
@@ -111,10 +131,22 @@ def main():
   # Retrieve the clustered defects in a dataframe
   clustered_defects = pd.DataFrame(list(zip(defects._id, defects.description, labels)),columns=['_id', 'description','group'])
 
+  # Most Popular Labels
+  result={'cluster': labels, 'defect_description':defects.description}
+  result=pd.DataFrame(result)
+
   # Split each cluster into individual dataframes
   for k in range(0,int(true_k)):
+    # Filtered Cluster
     new_df = clustered_defects.loc[(clustered_defects['group'] == k)]
-    submitGroup(new_df, k)
+
+    # Keywords
+    s=result[result.cluster==k]
+    raw_text=s['defect_description'].str.cat(sep=' ')
+    raw_text=raw_text.lower()
+    raw_text=' '.join([word for word in raw_text.split()])
+    TR_keywords = keywords.keywords(raw_text, scores=True)
+    submitGroup(new_df, k, concatenateKeywords(TR_keywords))
 
 main()
 
