@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 import requests
 import json
+from pathlib import Path
 import re
 
 # Sklearn
@@ -13,10 +14,6 @@ from sklearn.cluster import KMeans
 # Keywords
 from summa import keywords
 
-# Plotting Libraries
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 #Global Variables - Command Line Arguments
 reportId = sys.argv[1]
 sessionId = sys.argv[2]
@@ -24,8 +21,12 @@ true_k = sys.argv[3]
 session_date = sys.argv[4]
 
 # Stopwords
-spanish_json = open('stop_words_spanish.json')
-english_json = open('stop_words_english.json')
+script_location = Path(__file__).absolute().parent
+spanish_location = script_location / 'stop_words_spanish.json'
+english_location = script_location / 'stop_words_english.json'
+
+spanish_json = spanish_location.open()
+english_json = english_location.open()
 
 spanish_stopwords = json.load(spanish_json)
 english_stopwords = json.load(english_json)
