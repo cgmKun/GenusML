@@ -6,6 +6,7 @@ import json
 import re
 
 # Sklearn
+from sklearn.feature_extraction import text
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 
@@ -21,6 +22,18 @@ reportId = sys.argv[1]
 sessionId = sys.argv[2]
 true_k = sys.argv[3]
 session_date = sys.argv[4]
+
+# Stopwords
+spanish_json = open('stop_words_spanish.json')
+english_json = open('stop_words_english.json')
+
+spanish_stopwords = json.load(spanish_json)
+english_stopwords = json.load(english_json)
+complete_stopwords = spanish_stopwords + english_stopwords
+my_stop_words = text.ENGLISH_STOP_WORDS.union(spanish_stopwords)
+
+spanish_json.close()
+english_json.close()
 
 # Fetch defects by reportID GraphQL query
 # Returns a dataframe with the query results
@@ -120,7 +133,7 @@ def main():
   defects = fetchReport()
 
   #Vectorize the description from the defects dataframe
-  vectorizer = TfidfVectorizer(stop_words={'english', 'spanish'})
+  vectorizer = TfidfVectorizer(ngram_range=(1,1), stop_words=my_stop_words)
   vectorized_defects_description = vectorizer.fit_transform(defects.description)
 
   # Setup and run K-Means Clustering Model - Unsupervised Model
@@ -145,7 +158,7 @@ def main():
     raw_text=s['defect_description'].str.cat(sep=' ')
     raw_text=raw_text.lower()
     raw_text=' '.join([word for word in raw_text.split()])
-    TR_keywords = keywords.keywords(raw_text, scores=True)
+    TR_keywords = keywords.keywords(raw_text, scores=True, additional_stopwords=complete_stopwords)
     submitGroup(new_df, k, concatenateKeywords(TR_keywords))
 
 main()
